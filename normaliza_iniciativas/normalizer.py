@@ -1,6 +1,6 @@
-from unidecode import unidecode
-
 from re import sub
+
+from unidecode import unidecode
 
 SUBSTITUTIONS = r'[\(\.\)\'\n\-\\#;:/\[\]|]'
 
