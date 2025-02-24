@@ -44,6 +44,7 @@ class KoboHandler:
         self.data_folder = data_folder or os.path.join(".", "data")
         os.makedirs(os.path.dirname(self.data_folder), exist_ok=True)
         self.asset_path = os.path.join(self.data_folder, "kobo_assets.json")
+        self.replace = self.get_replace()
 
     def get_token(self):
         """Obtém o token de acesso"""
@@ -55,6 +56,12 @@ class KoboHandler:
         response.raise_for_status()
         token = response.json()["token"]
         return token
+
+    def get_replace(self):
+        REPLACE = os.getenv("REPLACE", False)
+        if REPLACE:
+            return True
+        return False
 
     def download_assets(self, output_file: str = None, replace: bool = False) -> dict:
         """Faz o download dos assets do KoboToolbox
@@ -164,6 +171,40 @@ class KoboHandler:
             f.write(response.content)
         print("XLS baixado com sucesso!")
         return output_file
+
+    def download_foto(self, url,path, replace=None):
+        """Baixa a imagem de uma URL
+
+        Parameters:
+            - url: str: URL da imagem
+            - path: str: caminho do arquivo de saída
+
+        Returns:
+            - True
+        """
+
+        if replace is None:
+            replace = self.replace
+
+        if os.path.exists(path) and not replace:
+            print(f"Arquivo {path} já existe, pulando download")
+            return True
+
+        folder = os.path.dirname(path)
+
+        # Cria a pasta se não existir
+        os.makedirs(folder, exist_ok=True)
+        if not replace and os.path.exists(path):
+            print(f"Arquivo {path} já existe, pulando download")
+            return True
+
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+        with open(path, "wb") as f:
+            f.write(response.content)
+        return True
+
+
 
 
 if __name__ == "__main__":
